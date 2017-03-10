@@ -14,34 +14,62 @@ class Timeout(Exception):
     pass
 
 
-def custom_score(game, player):
-    """Calculate the heuristic value of a game state from the point of view
-    of the given player.
-
-    Note: this function should be called from within a Player instance as
-    `self.score()` -- you should not need to call this function directly.
-
-    Parameters
-    ----------
-    game : `isolation.Board`
-        An instance of `isolation.Board` encoding the current state of the
-        game (e.g., player locations and blocked cells).
-
-    player : object
-        A player instance in the current game (i.e., an object corresponding to
-        one of the player objects `game.__player_1__` or `game.__player_2__`.)
-
-    Returns
-    -------
-    float
-        The heuristic value of the current game state to the specified player.
-    """
+def custom_score0(game, player):
 
     # Calculate my valid moves and the opponen moves.
     my_moves = game.get_legal_moves(player)
     opponent_moves = game.get_legal_moves(game.get_opponent(player))
     result = float(len(my_moves)) - 3 * float(len(opponent_moves))
     return result
+
+def custom_score1(game, player):
+    # Calculate factor to weight based on position
+    factor = float(100/game.width)
+
+    # Calculate my valid moves and the opponen moves.
+    my_moves = game.get_legal_moves(player) 
+    myself = 0
+    for move in my_moves:
+        #print('myself', move[0])
+        myself += (game.width - abs(move[0])) * factor +  (game.width - abs(move[1])) * factor
+
+    opponent_moves = game.get_legal_moves(game.get_opponent(player))
+    opponent = 0
+    for move in opponent_moves:
+        opponent += (game.width - abs(move[0])) * factor +  (game.width - abs(move[1])) * factor
+
+    result = myself - 2 * opponent
+
+    return result
+
+
+def custom_score(game, player):
+    # Calculate factor to weight based on position
+    # factor = float(100/game.width)
+
+    middle_x = int(game.width/2)+1
+    middle_y = int(game.height/2)+1
+
+    # Calculate my valid moves and the opponen moves.
+    
+    my_moves = game.get_legal_moves(player) 
+    myself = 0
+    for move in my_moves:
+        distance_middle_x = abs(game.get_player_location(player)[0]) - abs(move[0])
+        distance_middle_y = abs(game.get_player_location(player)[1]) - abs(move[1])
+        #print(distance_middle_x,'|',distance_middle_y)
+        myself += 1/max(distance_middle_x,distance_middle_y)
+
+    opponent_moves = game.get_legal_moves(game.get_opponent(player))
+    opponent = 0
+    for move in opponent_moves:
+        distance_middle_x = abs(abs(game.get_player_location(player)[0]) - abs(move[0]))
+        distance_middle_y = abs(abs(game.get_player_location(player)[1]) - abs(move[1]))
+        #print(distance_middle_x,'--',distance_middle_y)
+        opponent += 1/max(distance_middle_x,distance_middle_y)
+
+
+    return myself - opponent
 
 
 class CustomPlayer:
@@ -158,7 +186,11 @@ class CustomPlayer:
                     if self.time_left() < self.TIMER_THRESHOLD:
                         raise Timeout()
 
-                    score, move = self.minimax(game, depth)
+                     # Do minimax or alphabeta
+                    if self.method == 'minimax':
+                        score, move = self.minimax(game, depth)
+                    else:
+                        score, move = self.alphabeta(game, depth)
 
                     if score > b_score:
                         b_move = move
