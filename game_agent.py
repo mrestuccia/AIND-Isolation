@@ -38,7 +38,7 @@ def custom_score(game, player):
     for move in opponent_moves:
         opponent += (game.width - abs(move[0])) * factor +  (game.width - abs(move[1])) * factor
 
-    result = myself - 2 * opponent
+    result = myself - opponent
 
     return result
 
