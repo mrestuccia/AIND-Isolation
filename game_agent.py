@@ -22,7 +22,7 @@ def custom_score0(game, player):
     result = float(len(my_moves)) - 3 * float(len(opponent_moves))
     return result
 
-def custom_score1(game, player):
+def custom_score(game, player):
     # Calculate factor to weight based on position
     factor = float(100/game.width)
 
@@ -43,7 +43,7 @@ def custom_score1(game, player):
     return result
 
 
-def custom_score(game, player):
+def custom_score1(game, player):
     # Calculate factor to weight based on position
     # factor = float(100/game.width)
 
