@@ -8,13 +8,34 @@ relative strength using tournament.py and include the results in your report.
 """
 import random
 
+
 class Timeout(Exception):
     """Subclass base exception for code clarity."""
     # print('Timeout')
     pass
 
 
-def custom_score0(game, player):
+def custom_score_20170309(game, player):  #func: 20170309
+    """
+    Improved_score with a multiplier on the opposition moves
+    Parameters
+    ----------
+    game : `isolation.Board`
+        An instance of `isolation.Board` encoding the current state of the
+        game (e.g., player locations and blocked cells).
+    player : object
+        A player instance in the current game (i.e., an object corresponding to
+        one of the player objects `game.__player_1__` or `game.__player_2__`.)
+    Returns
+    ----------
+    float
+        The heuristic value of the current game state to the specified player.
+    """
+    if game.is_loser(player):
+        return float("-inf")
+
+    if game.is_winner(player):
+        return float("inf")
 
     # Calculate my valid moves and the opponen moves.
     my_moves = game.get_legal_moves(player)
@@ -22,54 +43,174 @@ def custom_score0(game, player):
     result = float(len(my_moves)) - 3 * float(len(opponent_moves))
     return result
 
-def custom_score(game, player):
+
+def custom_score_20170311(game, player): #20170311
+    """
+    Calculate every position giving a weight based on the location
+    Parameters
+    ----------
+    game : `isolation.Board`
+        An instance of `isolation.Board` encoding the current state of the
+        game (e.g., player locations and blocked cells).
+    player : object
+        A player instance in the current game (i.e., an object corresponding to
+        one of the player objects `game.__player_1__` or `game.__player_2__`.)
+    Returns
+    ----------
+    float
+        The heuristic value of the current game state to the specified player.
+    """
+
+    if game.is_loser(player):
+        return float("-inf")
+
+    if game.is_winner(player):
+        return float("inf")
+
     # Calculate factor to weight based on position
-    factor = float(100/game.width)
+    factor = float(100 / game.width)
+    op_factor = factor / 0.5
+
+    # Calculate the middle of the board 
+    middle_x, middle_y = middle_node(game)
 
     # Calculate my valid moves and the opponen moves.
-    my_moves = game.get_legal_moves(player) 
+    my_moves = game.get_legal_moves(player)
     myself = 0
     for move in my_moves:
-        #print('myself', move[0])
-        myself += (game.width - abs(move[0])) * factor +  (game.width - abs(move[1])) * factor
+        myself += abs(middle_x - move[0]) * \
+            factor + abs(middle_y - move[1]) * factor
 
     opponent_moves = game.get_legal_moves(game.get_opponent(player))
     opponent = 0
     for move in opponent_moves:
-        opponent += (game.width - abs(move[0])) * factor +  (game.width - abs(move[1])) * factor
+        opponent += abs(middle_x - move[0]) * \
+            op_factor + abs(middle_y - move[1]) * op_factor
 
     result = myself - opponent
 
     return result
 
 
-def custom_score1(game, player):
-    # Calculate factor to weight based on position
-    # factor = float(100/game.width)
+def custom_score(game, player): #20170312
+    """
+    Calculate every position giving a weight based on the location
+    Center gets 1, around 0.5 then 0.33, 025 as the distance get's 
+    bigger
+    Parameters
+    ----------
+    game : `isolation.Board`
+        An instance of `isolation.Board` encoding the current state of the
+        game (e.g., player locations and blocked cells).
+    player : object
+        A player instance in the current game (i.e., an object corresponding to
+        one of the player objects `game.__player_1__` or `game.__player_2__`.)
+    Returns
+    ----------
+    float
+        The heuristic value of the current game state to the specified player.
+    """
 
-    middle_x = int(game.width/2)+1
-    middle_y = int(game.height/2)+1
+    if game.is_loser(player):
+        return float("-inf")
+
+    if game.is_winner(player):
+        return float("inf")
+
+    # Calculate the middle of the board 
+    middle_x, middle_y = middle_node(game)
 
     # Calculate my valid moves and the opponen moves.
-    
-    my_moves = game.get_legal_moves(player) 
+    my_moves = game.get_legal_moves(player)
     myself = 0
     for move in my_moves:
-        distance_middle_x = abs(game.get_player_location(player)[0]) - abs(move[0])
-        distance_middle_y = abs(game.get_player_location(player)[1]) - abs(move[1])
-        #print(distance_middle_x,'|',distance_middle_y)
-        myself += 1/max(distance_middle_x,distance_middle_y)
+        value = max(abs(middle_x - move[0]), abs(middle_y - move[1]))
+        factor = float(1 / float(value+1))
+        myself += factor
 
     opponent_moves = game.get_legal_moves(game.get_opponent(player))
     opponent = 0
     for move in opponent_moves:
-        distance_middle_x = abs(abs(game.get_player_location(player)[0]) - abs(move[0]))
-        distance_middle_y = abs(abs(game.get_player_location(player)[1]) - abs(move[1]))
-        #print(distance_middle_x,'--',distance_middle_y)
-        opponent += 1/max(distance_middle_x,distance_middle_y)
+        value = max(abs(middle_x - move[0]), abs(middle_y - move[1]))
+        factor = float(1 / float(value+1))
+        opponent += factor
+
+    result = myself - opponent
+
+    return result
 
 
-    return myself - opponent
+
+def middle_node(game):
+    """
+    Middle helper
+    """
+    return int(game.width/2) + 1 , int(game.height/2) + 1
+
+def near_middle_nodes(game):
+    """
+    L-Shapes helper
+    """
+    near_center = []
+    around_middle = [(2, 1), (-2, -1), (-2, 1), (2, -1), (1, 2), (-1, -2), (-1, 2), (1, -2)]
+    w, h = middle_node(game)
+
+    for (row, column) in around_middle:
+        near_center.append((w + row, h + column))
+
+    return near_center
+
+
+def custom_score_20170313(game, player):  #func: 20170313
+    """Variation using the idea of the L-shape surround as with a extra
+    weight of 1.5 if it's the center and 0.5 if it's just the inmediate surrounding
+    of the center and only considering the current position of my player 
+    for a given board
+    Parameters
+    ----------
+    game : `isolation.Board`
+        An instance of `isolation.Board` encoding the current state of the
+        game (e.g., player locations and blocked cells).
+    player : object
+        A player instance in the current game (i.e., an object corresponding to
+        one of the player objects `game.__player_1__` or `game.__player_2__`.)
+    Returns
+    ----------
+    float
+        The heuristic value of the current game state to the specified player.
+    """
+
+    # Game is over, return
+    if game.is_loser(player):
+        return float("-inf")
+
+    if game.is_winner(player):
+        return float("inf")
+
+    #initial values
+    weigth = 0
+
+    # get the middle and nearby nodes
+    middle = middle_node(game)
+    near_middle = near_middle_nodes(game)
+
+    # check the location of the player 
+    # and provide a weight
+    # based on that
+    cur_player = game.get_player_location(player)
+
+    if cur_player in middle:
+        weigth = 1.5
+
+    if cur_player in near_middle:
+        weigth = 0.5
+
+    # calculate my moves and my opponent moves
+    my_moves = game.get_legal_moves(player)
+    opponent_moves = game.get_legal_moves(game.get_opponent(player))
+
+    # return the diferences of avaliable moves with weight
+    return float(len(my_moves) - len(opponent_moves) + weigth)
 
 
 class CustomPlayer:
@@ -167,7 +308,8 @@ class CustomPlayer:
         # Middle is better
         open_x = int(float(game.width) / 2)
         open_y = int(float(game.width) / 2)
-        opening_book = [(open_x,  open_y), (open_x - 1,open_y), (open_x + 1,  open_y)]
+        opening_book = [(open_x,  open_y), (open_x - 1,
+                                            open_y), (open_x + 1,  open_y)]
 
         if game.move_count <= 1:
             return opening_book[game.move_count]
@@ -334,7 +476,7 @@ class CustomPlayer:
             c_score, _ = self.alphabeta(
                 game.forecast_move(move), depth - 1, alpha, beta, not maximizing_player)
 
-            # Eval 
+            # Eval
             if maximizing_player:
                 if c_score > b_score:
                     b_score = c_score
@@ -354,7 +496,7 @@ class CustomPlayer:
                 # Prune
                 if b_score <= alpha:
                     break
-                
+
                 # Calculate new Beta
                 beta = min(beta, b_score)
 
