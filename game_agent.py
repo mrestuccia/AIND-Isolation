@@ -1,13 +1,6 @@
-"""This file contains all the classes you must complete for this project.
-
-You can use the test cases in agent_test.py to help during development, and
-augment the test suite with your own test cases to further test your code.
-
-You must test your agent's strength against a set of agents with known
-relative strength using tournament.py and include the results in your report.
 """
-import random
-
+Game Agent
+"""
 
 class Timeout(Exception):
     """Subclass base exception for code clarity."""
@@ -15,7 +8,7 @@ class Timeout(Exception):
     pass
 
 
-def custom_score_20170309(game, player):  #func: 20170309
+def custom_score(game, player):  #func: 20170309
     """
     Improved_score with a multiplier on the opposition moves
     Parameters
@@ -71,7 +64,7 @@ def custom_score_20170311(game, player): #20170311
     factor = float(100 / game.width)
     op_factor = factor / 0.5
 
-    # Calculate the middle of the board 
+    # Calculate the middle of the board
     middle_x, middle_y = middle_node(game)
 
     # Calculate my valid moves and the opponen moves.
@@ -92,10 +85,10 @@ def custom_score_20170311(game, player): #20170311
     return result
 
 
-def custom_score(game, player): #20170312
+def custom_score_20170312(game, player): #20170312
     """
     Calculate every position giving a weight based on the location
-    Center gets 1, around 0.5 then 0.33, 025 as the distance get's 
+    Center gets 1, around 0.5 then 0.33, 025 as the distance get's
     bigger
     Parameters
     ----------
@@ -117,7 +110,7 @@ def custom_score(game, player): #20170312
     if game.is_winner(player):
         return float("inf")
 
-    # Calculate the middle of the board 
+    # Calculate the middle of the board
     middle_x, middle_y = middle_node(game)
 
     # Calculate my valid moves and the opponen moves.
@@ -145,7 +138,7 @@ def middle_node(game):
     """
     Middle helper
     """
-    return int(game.width/2) + 1 , int(game.height/2) + 1
+    return int(game.width/2) + 1, int(game.height/2) + 1
 
 def near_middle_nodes(game):
     """
@@ -153,10 +146,10 @@ def near_middle_nodes(game):
     """
     near_center = []
     around_middle = [(2, 1), (-2, -1), (-2, 1), (2, -1), (1, 2), (-1, -2), (-1, 2), (1, -2)]
-    w, h = middle_node(game)
+    width, height = middle_node(game)
 
     for (row, column) in around_middle:
-        near_center.append((w + row, h + column))
+        near_center.append((width + row, height + column))
 
     return near_center
 
@@ -164,7 +157,7 @@ def near_middle_nodes(game):
 def custom_score_20170313(game, player):  #func: 20170313
     """Variation using the idea of the L-shape surround as with a extra
     weight of 1.5 if it's the center and 0.5 if it's just the inmediate surrounding
-    of the center and only considering the current position of my player 
+    of the center and only considering the current position of my player
     for a given board
     Parameters
     ----------
@@ -194,7 +187,7 @@ def custom_score_20170313(game, player):  #func: 20170313
     middle = middle_node(game)
     near_middle = near_middle_nodes(game)
 
-    # check the location of the player 
+    # check the location of the player
     # and provide a weight
     # based on that
     cur_player = game.get_player_location(player)
@@ -308,8 +301,7 @@ class CustomPlayer:
         # Middle is better
         open_x = int(float(game.width) / 2)
         open_y = int(float(game.width) / 2)
-        opening_book = [(open_x,  open_y), (open_x - 1,
-                                            open_y), (open_x + 1,  open_y)]
+        opening_book = [(open_x,  open_y), (open_x - 1, open_y), (open_x + 1,  open_y)]
 
         if game.move_count <= 1:
             return opening_book[game.move_count]
