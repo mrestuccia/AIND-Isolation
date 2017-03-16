@@ -8,7 +8,8 @@ class Timeout(Exception):
     pass
 
 
-def custom_score(game, player):  #func: 20170309
+
+def custom_score(game, player):  #func: score_3opposition <-this one is my prefer play
     """
     Improved_score with a multiplier on the opposition moves
     Parameters
@@ -37,7 +38,48 @@ def custom_score(game, player):  #func: 20170309
     return result
 
 
-def custom_score_20170311(game, player): #20170311
+def score_agressive_defensive(game, player):  #func: 20170316 score_agressive_defensive
+    """
+    Improved_score with a multiplier on the opposition moves
+    Parameters
+    ----------
+    game : `isolation.Board`
+        An instance of `isolation.Board` encoding the current state of the
+        game (e.g., player locations and blocked cells).
+    player : object
+        A player instance in the current game (i.e., an object corresponding to
+        one of the player objects `game.__player_1__` or `game.__player_2__`.)
+    Returns
+    ----------
+    float
+        The heuristic value of the current game state to the specified player.
+    """
+    if game.is_loser(player):
+        return float("-inf")
+
+    if game.is_winner(player):
+        return float("inf")
+
+    #state of the game
+    state = float(len(game.get_blank_spaces())) / float(game.width * game.height)
+ 
+    # Calculate my valid moves and the opponent moves.
+    my_moves = game.get_legal_moves(player)
+    opponent_moves = game.get_legal_moves(game.get_opponent(player))
+
+    if(state > 0.5): 
+        #print("normal")
+        result = float(len(my_moves) * 2 - len(opponent_moves))
+    else:
+        #print("aggressive")
+        result = float(len(my_moves) - 2 * len(opponent_moves))
+    
+    return result
+
+
+
+
+def score_20170311(game, player): #20170311
     """
     Calculate every position giving a weight based on the location
     Parameters
@@ -85,7 +127,7 @@ def custom_score_20170311(game, player): #20170311
     return result
 
 
-def custom_score_20170312(game, player): #20170312
+def score_weighted_status(game, player): #20170312 score_weighted_status
     """
     Calculate every position giving a weight based on the location
     Center gets 1, around 0.5 then 0.33, 025 as the distance get's
@@ -154,7 +196,7 @@ def near_middle_nodes(game):
     return near_center
 
 
-def custom_score_20170313(game, player):  #func: 20170313
+def score_simple_plus_current(game, player):  #func: 20170313 score_simple_plus_current
     """Variation using the idea of the L-shape surround as with a extra
     weight of 1.5 if it's the center and 0.5 if it's just the inmediate surrounding
     of the center and only considering the current position of my player
@@ -237,7 +279,7 @@ class CustomPlayer:
     """
 
     def __init__(self, search_depth=3, score_fn=custom_score,
-                 iterative=True, method='minimax', timeout=10.):
+                 iterative=True, method='minimax', timeout=20.):
         self.search_depth = search_depth
         self.iterative = iterative
         self.score = score_fn
@@ -280,7 +322,7 @@ class CustomPlayer:
             Board coordinates corresponding to a legal move; may return
             (-1, -1) if there are no available legal moves.
         """
-
+        max_depth = 0
         self.time_left = time_left
 
         # Perform any required initializations, including selecting an initial
@@ -313,7 +355,7 @@ class CustomPlayer:
             # when the timer gets close to expiring
 
             if self.iterative:
-                # Interactive Deepening with Minimax
+                # Interactive Deepening with Minimax / Alphabeta
                 depth = 1
                 while True:
 
@@ -339,6 +381,11 @@ class CustomPlayer:
                     b_score, b_move = self.alphabeta(game, self.search_depth)
 
         except Timeout:
+            #try:
+            #    print(depth)
+            #except NameError:
+            #    print("-")
+            
             return b_move
 
         # Return the best move
