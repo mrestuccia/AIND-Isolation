@@ -9,7 +9,7 @@ class Timeout(Exception):
 
 
 
-def custom_score(game, player):  #func: score_3opposition <-this one is my prefer play
+def custom_score(game, player):  #func: score_3opposition <-this one is my prefer heuristic
     """
     Improved_score with a multiplier on the opposition moves
     Parameters
@@ -67,7 +67,7 @@ def score_agressive_defensive(game, player):  #func: 20170316 score_agressive_de
     my_moves = game.get_legal_moves(player)
     opponent_moves = game.get_legal_moves(game.get_opponent(player))
 
-    if(state > 0.5): 
+    if(state >= 0.5): 
         #print("normal")
         result = float(len(my_moves) * 2 - len(opponent_moves))
     else:
